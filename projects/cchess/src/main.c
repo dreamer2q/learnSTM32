@@ -40,9 +40,19 @@ int16_t BEEP_INTERVAL = 0;
 // u16 LCD_COLOR_VALUES[] = {WHITE, BLACK,  BLUE,  RED,  MAGENTA, GREEN,
 // CYAN,  YELLOW, BRRED, GRAY, LGRAY,   BROWN};
 
+/**
+ * Game 游戏接口
+ */
 void Game_Init(void);
 void Game_Update(u16 elasped);
 void Game_Event(event_t *e);
+
+/**
+ * Snake 游戏接口
+ */
+void Snake_Init(void);
+void Snake_Update(u16 elasped);
+void Snake_Event(event_t *e);
 
 void mainloop() {
   u32 prev_uptime = 0;
@@ -56,6 +66,7 @@ void mainloop() {
   LCD_Clear(WHITE);
 
   Game_Init();
+  // Snake_Init();
 
   for (;;) {
     /**
@@ -169,12 +180,14 @@ void mainloop() {
      */
     if (CORE_HasEvent()) {
       Game_Event(CORE_WaitEvent());
+      // Snake_Event(CORE_WaitEvent());
     }
 
     /**
      * GAME LOGIC
      */
     Game_Update(interval);
+    // Snake_Update(interval);
   }
 }
 
