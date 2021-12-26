@@ -1,0 +1,61 @@
+[
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/base/pipe.cpp.o", "base/pipe.cpp"],
+  "file": "base/pipe.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/genmoves.cpp.o", "eleeye/genmoves.cpp"],
+  "file": "eleeye/genmoves.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/preeval.cpp.o", "eleeye/preeval.cpp"],
+  "file": "eleeye/preeval.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/pregen.cpp.o", "eleeye/pregen.cpp"],
+  "file": "eleeye/pregen.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/evaluate.cpp.o", "eleeye/evaluate.cpp"],
+  "file": "eleeye/evaluate.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/ucci.cpp.o", "eleeye/ucci.cpp"],
+  "file": "eleeye/ucci.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/search.cpp.o", "eleeye/search.cpp"],
+  "file": "eleeye/search.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/eleeye.cpp.o", "eleeye/eleeye.cpp"],
+  "file": "eleeye/eleeye.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/movesort.cpp.o", "eleeye/movesort.cpp"],
+  "file": "eleeye/movesort.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/book.cpp.o", "eleeye/book.cpp"],
+  "file": "eleeye/book.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/hash.cpp.o", "eleeye/hash.cpp"],
+  "file": "eleeye/hash.cpp"
+},
+{
+  "directory": "/Users/dreamer/Documents/PlatformIO/Projects/learnStm32/engine",
+  "arguments": ["/usr/bin/xcrun -sdk macosx clang", "-c", "-Qunused-arguments", "-arch", "arm64", "-mmacosx-version-min=12.1", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk", "-Iinclude", "-D__arm__", "-o", "build/.objs/eleeye/macosx/arm64/release/eleeye/position.cpp.o", "eleeye/position.cpp"],
+  "file": "eleeye/position.cpp"
+}]

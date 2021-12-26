@@ -1,0 +1,7 @@
+target("eleeye")
+  set_kind("binary")
+  add_files("base/*.cpp")
+  add_files("eleeye/*.cpp")
+  add_defines("__arm__")
+  add_includedirs("include")
+  set_targetdir("build")

@@ -1,0 +1,10 @@
+
+.vscode/*.log
+
+.xmake
+
+build/
+
+adaptor/serial.log
+adaptor/usbserial
+
