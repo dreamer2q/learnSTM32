@@ -4,6 +4,8 @@
 #include "lcd.h"
 #include "header.h"
 #include "font.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #define CMD_READ_GRAM 0x2E
 
@@ -434,6 +436,18 @@ void LCD_Fast_DrawPoint(u16 x, u16 y, u16 color) {
   LCD_WR_DATA(color);  //写数据
 }
 
+#define LCD_Fast_DrawPoint2(x, y, color) \
+  {                                      \
+    LCD_WR_CMD(lcddev.setxcmd);          \
+    LCD_WR_DATA(x >> 8);                 \
+    LCD_WR_DATA(x & 0XFF);               \
+    LCD_WR_CMD(lcddev.setycmd);          \
+    LCD_WR_DATA(y >> 8);                 \
+    LCD_WR_DATA(y & 0XFF);               \
+    LCD_WR_CMD(lcddev.wramcmd);          \
+    LCD_WR_DATA(color);                  \
+  }
+
 /**
  * SSD1963 背光设置
  * pwm:背光等级,0~100.越大越亮.
@@ -839,19 +853,21 @@ void LCD_ShowChar(u16 x, u16 y, u8 num, u8 size, u8 mode) {
   //得到偏移后的值（ASCII字库是从空格开始取模，所以num-' '就是对应字符的字库）
   num = num - ' ';
   for (t = 0; t < csize; t++) {
-    if (size == 12)
+    if (size == 12) {
       temp = asc2_1206[num][t];  //调用1206字体
-    else if (size == 16)
+    } else if (size == 16) {
       temp = asc2_1608[num][t];  //调用1608字体
-    else if (size == 24)
+    } else if (size == 24) {
       temp = asc2_2412[num][t];  //调用2412字体
-    else
+    } else {
       return;  //没有的字库
+    }
     for (t1 = 0; t1 < 8; t1++) {
-      if (temp & 0x80)
-        LCD_Fast_DrawPoint(x, y, POINT_COLOR);
-      else if (mode == 0)
-        LCD_Fast_DrawPoint(x, y, BACK_COLOR);
+      if (temp & 0x80) {
+        LCD_Fast_DrawPoint2(x, y, POINT_COLOR);
+      } else if (mode == 0) {
+        LCD_Fast_DrawPoint2(x, y, BACK_COLOR);
+      }
       temp <<= 1;
       y++;
       if (y >= lcddev.height) return;  //超区域了
@@ -950,5 +966,29 @@ void LCD_ShowString(u16 x, u16 y, u16 width, u16 height, u8 size, char *p) {
     LCD_ShowChar(x, y, *p, size, 0);
     x += size / 2;
     p++;
+  }
+}
+
+u8 LCD_PRINT_SIZE = 12;
+u8 LCD_PRINT_MODE = 1;
+void LCD_Draw_printf(u16 x, u16 y, const char *fmt, ...) {
+  char buf[256] = {0};
+  char *p = buf;
+  u8 x0 = x;
+  va_list valist;
+
+  va_start(valist, fmt);
+  vsnprintf(buf, sizeof buf, fmt, valist);
+  va_end(valist);
+
+  while ((*p <= '~') && (*p >= ' ')) {
+    if (x >= lcddev.width) {
+      x = x0;
+      y += LCD_PRINT_SIZE;
+    }
+    if (y >= lcddev.height) break;
+
+    LCD_ShowChar(x, y, *p++, LCD_PRINT_SIZE, LCD_PRINT_MODE);
+    x += LCD_PRINT_SIZE / 2;
   }
 }

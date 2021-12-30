@@ -30,6 +30,18 @@ int USART_getchar(void) {
   return ch;
 }
 
+int USART_readline(char *buf, int len) {
+  int readlen = 0;
+  while (readlen < len && USART_BUFLEN > 0) {
+    char ch = *USART_BUFTAIL;
+    USART_BUFLEN--;
+    USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
+    buf[readlen++] = ch;
+    if (ch == '\n') break;
+  }
+  return readlen;
+}
+
 int USART_putchar(uint16_t ch) {
   while (!(USART1->SR & USART_FLAG_TC)) {
     // 等待数据发送完成
@@ -47,9 +59,16 @@ void USART1_IRQHandler(void) {
       // 缓冲区溢出, 抛弃一个数据
       USART_BUFLEN--;
       USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
+      printf("drop byte\n");
     }
-    USART_BUFPTR = MOVE_NEXT(USART_BUFPTR);
     USART_BUFLEN++;
+    USART_BUFPTR = MOVE_NEXT(USART_BUFPTR);
+    if (ch == '\n') {  // 确保 \n 被收到
+      printf("~\n");
+      *USART_BUFPTR = '\n';
+      USART_BUFLEN++;
+      USART_BUFPTR = MOVE_NEXT(USART_BUFPTR);
+    }
   }
   // if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET) {
   //   u16 res = USART_ReceiveData(USART1);

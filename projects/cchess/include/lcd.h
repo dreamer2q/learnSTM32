@@ -196,6 +196,12 @@ void LCD_ShowxNum(u16 x, u16 y, u32 num, u8 len, u8 size, u8 mode);
 // 12/16/24字体
 void LCD_ShowString(u16 x, u16 y, u16 width, u16 height, u8 size, char *p);
 
+// LCD printf 配套参数
+extern u8 LCD_PRINT_SIZE;
+extern u8 LCD_PRINT_MODE;
+// LCD printf 输出
+void LCD_Draw_printf(u16 x, u16 y, const char *fmt, ...);
+
 // 设置屏扫描方向
 void LCD_Scan_Dir(u8 dir);
 

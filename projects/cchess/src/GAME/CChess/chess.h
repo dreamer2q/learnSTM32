@@ -76,6 +76,15 @@ const char* PIECE_NAME(u8 pc);
 const tImage PIECE_RES(u8 pc);
 
 /**
+ * Player
+ */
+struct player {
+  s32 lefttime;
+};
+extern struct player players[];
+extern u8 current_player;
+
+/**
  * 获取 Player 昵称
  */
 inline const char* PLAYER_NAME(u8 player) {
@@ -187,7 +196,6 @@ struct ucci_stat {
     char version[8];
     char user[32];
   } id;
-  s32 left_time;
 };
 
 enum ucci_command {
@@ -195,6 +203,8 @@ enum ucci_command {
   UCCI_INIT,
   UCCI_MOVE,
 };
+
+extern struct ucci_stat ucci_com;
 
 void UCCI_FirstSync(void);
 void UCCI_SyncUpdate(void);

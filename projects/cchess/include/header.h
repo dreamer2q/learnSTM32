@@ -120,7 +120,7 @@ u8 KEY_Scan(void);
 /**
  * USART is OK
  */
-#define USART_BUFSIZ 512
+#define USART_BUFSIZ 2048
 // extern char USART_STDIN_BUF[USART_BUFSIZ];
 // extern char *USART_BUFPTR, *USART_BUFTAIL;
 // extern u16 USART_BUFLEN;
@@ -129,6 +129,7 @@ int USART_haschar(void);
 int USART_putchar(uint16_t ch);
 int USART_getchar(void);
 int USART_getline(char *buf);
+int USART_readline(char *buf, int len);
 
 /**
  * PWM is ?

@@ -13,23 +13,94 @@
 #endif
 #define log_debug(fmt, ...) debug({ printf(fmt, __VA_ARGS__); })
 
+// 棋盘 Y 偏移量
 #define OFFY 26
+#define EV_MAX
+
 #define HAS_PIECE(sq) (chess_board[(sq)] != 0)
 
 /**
  * 全局变量
  */
+
+// 对局模式
 enum gm {
   PLAYER_VS_PLAYER,
   PLAYER_VS_COMPUTER,
 };
-enum gm game_mode = PLAYER_VS_COMPUTER;
+enum gm CC_MODE = PLAYER_VS_COMPUTER;
+
+enum cchess {
+  NOT_BEGIN,
+  GAME_PAUSED,
+  GAME_PLAYING,
+  GAME_WIN,
+  GAME_DRAW,
+};
+enum cchess CC_STATE = NOT_BEGIN;
+
+void ev_click_chess(event_t *);
+void ev_click_welcome(event_t *);
+void ev_undo_chess(void);
+
+// 事件区域
+struct ev_area_t {
+  u16 x, y;
+  u16 w, h;
+  void (*handler)(event_t *);
+  enum cchess filter;
+} EV_QUEUE[] = {
+    // 棋盘事件
+    {
+        .x = 0,
+        .y = OFFY,
+        .w = 240,
+        .h = 267,
+        .filter = GAME_PLAYING,
+        .handler = ev_click_chess,
+    },
+    // 开始页面
+    {
+        .x = 10,
+        .y = 115,
+        .w = 240,
+        .h = 30,
+        .filter = NOT_BEGIN,
+        .handler = ev_click_welcome,
+    },
+    {
+        .x = 10,
+        .y = 115 + 50,
+        .w = 240,
+        .h = 30,
+        .filter = NOT_BEGIN,
+        .handler = ev_click_welcome,
+    },
+};
+u8 EV_LEN = LEN(EV_QUEUE);
+
+// 游戏棋盘
 u8 chess_board[16 * 16];
+// 当前走子选手
 u8 current_player = 0;
+// 棋子选中
 u8 sq_selected = 0;
+// 上一步走子记录
 u16 mv_last = 0;
+// 走子历史记录(stack)
 struct move_t chess_moves[MAX_MOVE_LEN];
 u16 move_index = 0;
+
+struct player players[] = {
+    {
+        .lefttime = 15 * 60 * 1000,  // 15min,
+    },
+    {
+        .lefttime = 15 * 60 * 1000,  // 15min
+    },
+};
+
+#define player players[current_player]
 
 void draw_res(u16 x, u16 y, const tImage res) {
   LCD_Color_Fill(x, y, x + res.width - 1, y + res.height - 1, (u16 *)res.data);
@@ -81,6 +152,25 @@ void draw_piece(u8 sq, u8 selected) {
   }
 }
 
+void welcome_page(void) {
+  CC_STATE = NOT_BEGIN;
+  // background
+  draw_res(0, OFFY, LCD_RES_BOARD);
+
+  POINT_COLOR = RED;
+  LCD_PRINT_SIZE = 24;
+  LCD_Draw_printf(35, 60, "Chinese Chess");
+
+  LCD_PRINT_SIZE = 16;
+  POINT_COLOR = BLACK;
+  LCD_DrawRectangle(65, 115, 180, 140);
+  LCD_DrawRectangle(65, 115 + 50, 180, 140 + 50);
+  LCD_Draw_printf(70, 120, "Play Computer");
+  LCD_Draw_printf(70, 170, "Play Personal");
+  draw_chess_res(40, 90 + OFFY, LCD_RES_BK);
+  draw_chess_res(40, 90 + 50 + OFFY, LCD_RES_RK);
+}
+
 void init_draw(void) {
   draw_res(0, OFFY, LCD_RES_BOARD);
 
@@ -94,6 +184,43 @@ void init_draw(void) {
         draw_chess_res(xx, yy + OFFY, PIECE_RES(pc));
       }
     }
+  }
+
+  draw_res(15, 0, LCD_RES_BK);
+  draw_res(15, 294, LCD_RES_RK);
+}
+
+void chess_init(void) {
+  current_player = PLAYER_RED;
+  CC_STATE = GAME_PLAYING;
+  memcpy(chess_board, CC_BOARD_STARTUP, sizeof(chess_board));
+
+  if (CC_MODE == PLAYER_VS_COMPUTER) {
+    // 5min
+    players[PLAYER_BLACK].lefttime = 5 * 60 * 1000;
+    init_draw();
+    LCD_PRINT_MODE = 1;
+    LCD_PRINT_SIZE = 16;
+    LCD_Draw_printf(18, 150, "Waiting UCCI OK ...");
+    UCCI_FirstSync();
+  }
+
+  init_draw();
+}
+
+void ev_click_welcome(event_t *e) {
+  // u16 x = e->param1;
+  u16 y = e->param2;
+  if (y <= 115 + 50) {
+    // Computer
+
+    CC_MODE = PLAYER_VS_COMPUTER;
+    chess_init();
+
+  } else {
+    // Personal
+    CC_MODE = PLAYER_VS_PLAYER;
+    chess_init();
   }
 }
 
@@ -491,7 +618,7 @@ void EngineMove(u16 mv) {
 
       if (is_mate()) {
         // 是否分出胜负
-        printf("engine WIN\n");
+        CC_STATE = GAME_WIN;
       } else {
         if (is_checked()) {
           BEEP_INTERVAL = 500;
@@ -499,7 +626,6 @@ void EngineMove(u16 mv) {
       }
     }
   } else {
-    printf("engine: ILLEGAL MOVE\n");
     BEEP_INTERVAL = 500;
     // 非法走棋子，忽略不处理
   }
@@ -513,7 +639,7 @@ void click_chess(u8 sq) {
   log_debug("click: %s %s (%d,%d)\n", PLAYER_NAME(current_player),
             PIECE_NAME(pc), FILE_X(sq), RANK_Y(sq));
 
-  if (game_mode == PLAYER_VS_COMPUTER && current_player == PLAYER_BLACK) {
+  if (CC_MODE == PLAYER_VS_COMPUTER && current_player == PLAYER_BLACK) {
     // 等待电脑走棋
     return;
   }
@@ -550,15 +676,14 @@ void click_chess(u8 sq) {
 
         if (is_mate()) {
           // 是否分出胜负
-          printf("YOU WIN\n");
+          CC_STATE = GAME_WIN;
         } else {
           if (is_checked()) {
-            printf("CHECK KING\n");
             BEEP_INTERVAL = 500;
           }
 
           // computer
-          if (game_mode == PLAYER_VS_COMPUTER) {
+          if (CC_MODE == PLAYER_VS_COMPUTER) {
             // 1. 发送当前局面和走子信息
             UCCI_Command(UCCI_MOVE, NULL);
             // 2. 等待电脑走子信息
@@ -568,89 +693,117 @@ void click_chess(u8 sq) {
       } else {
         // 被将军 提示
         BEEP_INTERVAL = 500;
-        printf("KING is CHECKED\n");
       }
     } else {
-      printf("ILLEGAL MOVE\n");
       // 非法走棋子，忽略不处理
     }
   }
 }
 
-void Game_Init(void) {
-  memcpy(chess_board, CC_BOARD_STARTUP, sizeof(chess_board));
-  init_draw();
-
-  if (game_mode == PLAYER_VS_COMPUTER) {
-    GAME_printf("waiting ucci ok...");
-    UCCI_FirstSync();
-    GAME_printf("ucci is ok");
-  }
-}
+void Game_Init(void) { welcome_page(); }
 
 void Game_Update(u16 elasped) {
   // printf("game_update");
-  if (game_mode == PLAYER_VS_COMPUTER) {
-    UCCI_SyncUpdate();
+  if (CC_STATE == GAME_PLAYING) {
+    if (CC_MODE == PLAYER_VS_COMPUTER) {
+      UCCI_SyncUpdate();
+    }
+    player.lefttime -= elasped;
+    u16 sec = player.lefttime / 1000;
+    u16 min = sec / 60;
+    LCD_PRINT_MODE = 0;
+    LCD_PRINT_SIZE = 16;
+    if (current_player == PLAYER_BLACK) {
+      LCD_Draw_printf(10 + 35, 3, "%02d:%02d", min, sec % 60);
+    } else {
+      LCD_Draw_printf(10 + 35, 297, "%02d:%02d", min, sec % 60);
+    }
+    if (player.lefttime < 0) {
+      CC_STATE = GAME_WIN;
+    }
+  } else if (CC_STATE == GAME_WIN) {
+    POINT_COLOR = RED;
+    LCD_PRINT_MODE = 1;
+    LCD_PRINT_SIZE = 24;
+    LCD_Draw_printf(18, 150, "%s WINNER!", PLAYER_NAME(1 - current_player));
+  } else if (CC_STATE == GAME_DRAW) {
+    POINT_COLOR = RED;
+    LCD_PRINT_MODE = 1;
+    LCD_PRINT_SIZE = 24;
+    LCD_Draw_printf(18, 150, "DRAW~");
   }
 }
 
 void Game_Event(event_t *e) {
   if (e->type == EVENT_Touchdown) {
     u16 x = e->param1, y = e->param2;
-    // printf("down( %u, %u)\n", x, y);
-    /**
-     * 0 <= x <= 240
-     * 0 <= y <= 267
-     */
-    if (OFFY <= y && y <= 267 + OFFY) {
-      y -= OFFY;
-      u8 px = FILE_LEFT + (x - BOARD_EDGE) / SQUARE_SIZE;
-      u8 py = RANK_TOP + (y - BOARD_EDGE) / SQUARE_SIZE;
-      if (px >= FILE_LEFT && px <= FILE_RIGHT && py >= RANK_TOP &&
-          py <= RANK_BOTTOM) {
-        click_chess(COORD_XY(px, py));
+    for (u8 i = 0; i < EV_LEN; i++) {
+      struct ev_area_t *ev = EV_QUEUE + i;
+      if (ev->filter == CC_STATE) {
+        if (x >= ev->x && x <= ev->x + ev->w && y >= ev->y &&
+            y <= ev->y + ev->h) {
+          ev->handler(e);
+          break;
+        }
       }
     }
   } else if (e->type == EVENT_Keypress) {
-    // 悔棋
-    if (e->param1 == KEY_COUNTER) {
-      if (move_index == 0) {
-        // 步数不够... 无法悔棋
-        return;
-      }
-      if (game_mode == PLAYER_VS_COMPUTER && current_player == PLAYER_BLACK) {
-        // 电脑思考中... 无法悔棋
-        return;
-      }
-      if (sq_selected) {
-        draw_piece(sq_selected, DRAW_UNSELECT);
-      }
-      if (mv_last != 0) {
-        // clear 上一步的提示
-        draw_piece(SRC(mv_last), DRAW_UNSELECT);
-        draw_piece(DST(mv_last), DRAW_UNSELECT);
-      }
-      struct move_t move = chess_moves[--move_index];
-      undo_move_piece(move.mv, move.pc);
-      mv_last = move.mv;
-      draw_piece(SRC(move.mv), DRAW_SELECTED);
-      draw_piece(DST(move.mv), DRAW_SELECTED);
-      change_side();
-      if (game_mode == PLAYER_VS_COMPUTER) {
-        // clear 上一步的提示
-        draw_piece(SRC(mv_last), DRAW_UNSELECT);
-        draw_piece(DST(mv_last), DRAW_UNSELECT);
-
-        move = chess_moves[--move_index];
-        undo_move_piece(move.mv, move.pc);
-        mv_last = move.mv;
-        draw_piece(SRC(move.mv), DRAW_SELECTED);
-        draw_piece(DST(move.mv), DRAW_SELECTED);
-        change_side();
-      }
-      sq_selected = 0;
-      BEEP_INTERVAL = 100;
-    }
+    ev_undo_chess();
   }
+}
+
+void ev_click_chess(event_t *e) {
+  /**
+   * 0 <= x <= 240
+   * 0 <= y <= 267
+   */
+  u16 x = e->param1, y = e->param2;
+  y -= OFFY;
+  u8 px = FILE_LEFT + (x - BOARD_EDGE) / SQUARE_SIZE;
+  u8 py = RANK_TOP + (y - BOARD_EDGE) / SQUARE_SIZE;
+  if (px >= FILE_LEFT && px <= FILE_RIGHT && py >= RANK_TOP &&
+      py <= RANK_BOTTOM) {
+    click_chess(COORD_XY(px, py));
+  }
+}
+
+void ev_undo_chess(void) {
+  if (CC_STATE != GAME_PLAYING) return;
+  // 悔棋
+  if (move_index == 0) {
+    // 步数不够... 无法悔棋
+    return;
+  }
+  if (CC_MODE == PLAYER_VS_COMPUTER && current_player == PLAYER_BLACK) {
+    // 电脑思考中... 无法悔棋
+    return;
+  }
+  if (sq_selected) {
+    draw_piece(sq_selected, DRAW_UNSELECT);
+  }
+  if (mv_last != 0) {
+    // clear 上一步的提示
+    draw_piece(SRC(mv_last), DRAW_UNSELECT);
+    draw_piece(DST(mv_last), DRAW_UNSELECT);
+  }
+  struct move_t move = chess_moves[--move_index];
+  undo_move_piece(move.mv, move.pc);
+  mv_last = move.mv;
+  draw_piece(SRC(move.mv), DRAW_SELECTED);
+  draw_piece(DST(move.mv), DRAW_SELECTED);
+  change_side();
+  if (CC_MODE == PLAYER_VS_COMPUTER) {
+    // clear 上一步的提示
+    draw_piece(SRC(mv_last), DRAW_UNSELECT);
+    draw_piece(DST(mv_last), DRAW_UNSELECT);
+
+    move = chess_moves[--move_index];
+    undo_move_piece(move.mv, move.pc);
+    mv_last = move.mv;
+    draw_piece(SRC(move.mv), DRAW_SELECTED);
+    draw_piece(DST(move.mv), DRAW_SELECTED);
+    change_side();
+  }
+  sq_selected = 0;
+  BEEP_INTERVAL = 100;
 }
