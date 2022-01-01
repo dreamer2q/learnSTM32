@@ -79,9 +79,16 @@ void UCCI_SyncUpdate(void) {
     if (len > 0) {
       BUFLEN += len;
       if (UCCI_BUF[BUFLEN - 1] == '\n') {
+        if (BUFLEN == 1) {
+          // 单纯的换行
+          BUFLEN = 0;
+          continue;
+        }
+        // debug
+        // USART_putchar(UCCI_BUF[0]);
+        // USART_putchar('\n');
         UCCI_BUF[BUFLEN - 1] = '\0';
         BUFLEN = 0;
-        // GAME_printf("%c", UCCI_BUF[0]);
         UCCI_Parse(UCCI_BUF);
       }
     } else {

@@ -370,9 +370,9 @@ int main(int argc, char* argv[]) {
     // Engine 输入
     if (has_input(ein)) {
       read(ein, &ech, 1);
-      serial_putchar(fd, ech);
       write(STDOUT_FILENO, &ech, 1);
       write(logfd, &ech, 1);
+      serial_putchar(fd, ech);
     }
   }
   nonblock(DISABLE);

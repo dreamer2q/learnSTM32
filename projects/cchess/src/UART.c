@@ -5,11 +5,13 @@
 char USART_STDIN_BUF[USART_BUFSIZ];
 char *USART_BUFPTR = USART_STDIN_BUF;
 char *USART_BUFTAIL = USART_STDIN_BUF;
-u16 USART_BUFLEN = 0;
+// u16 USART_BUFLEN = 0;
 
 #define MOVE_NEXT(ptr) __NEXT_PTR_LOOP(USART_STDIN_BUF, ptr, USART_BUFSIZ)
 
-inline int USART_haschar(void) { return USART_BUFLEN > 0; }
+// inline int USART_haschar(void) { return USART_BUFLEN > 0; }
+
+inline BOOL USART_haschar(void) { return USART_BUFPTR != USART_BUFTAIL; }
 
 int USART_getline(char *buf) {
   char ch;
@@ -21,20 +23,20 @@ int USART_getline(char *buf) {
 }
 
 int USART_getchar(void) {
-  while (USART_BUFLEN == 0) {
+  while (USART_haschar() == FALSE) {
     // wait ...
   }
   char ch = *USART_BUFTAIL;
-  USART_BUFLEN--;
+  // USART_BUFLEN--;
   USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
   return ch;
 }
 
 int USART_readline(char *buf, int len) {
   int readlen = 0;
-  while (readlen < len && USART_BUFLEN > 0) {
+  while (readlen < len && USART_haschar()) {
     char ch = *USART_BUFTAIL;
-    USART_BUFLEN--;
+    // USART_BUFLEN--;
     USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
     buf[readlen++] = ch;
     if (ch == '\n') break;
@@ -55,20 +57,17 @@ void USART1_IRQHandler(void) {
     // 对USART_DR的读操作可以将该位清零。
     u8 ch = USART1->DR;
     *USART_BUFPTR = ch;
-    if (USART_BUFLEN == USART_BUFSIZ) {
+    // if (ch == '\n') {
+    //   printf("~\n");
+    // }
+    // if (USART_BUFLEN == USART_BUFSIZ) {
       // 缓冲区溢出, 抛弃一个数据
-      USART_BUFLEN--;
-      USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
-      printf("drop byte\n");
-    }
-    USART_BUFLEN++;
+      // USART_BUFLEN--;
+      // USART_BUFTAIL = MOVE_NEXT(USART_BUFTAIL);
+      // printf("drop byte\n");
+    // }
     USART_BUFPTR = MOVE_NEXT(USART_BUFPTR);
-    if (ch == '\n') {  // 确保 \n 被收到
-      printf("~\n");
-      *USART_BUFPTR = '\n';
-      USART_BUFLEN++;
-      USART_BUFPTR = MOVE_NEXT(USART_BUFPTR);
-    }
+    // USART_BUFLEN++;
   }
   // if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET) {
   //   u16 res = USART_ReceiveData(USART1);

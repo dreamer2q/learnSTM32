@@ -125,7 +125,7 @@ u8 KEY_Scan(void);
 // extern char *USART_BUFPTR, *USART_BUFTAIL;
 // extern u16 USART_BUFLEN;
 void USART_Configure(void);
-int USART_haschar(void);
+BOOL USART_haschar(void);
 int USART_putchar(uint16_t ch);
 int USART_getchar(void);
 int USART_getline(char *buf);
